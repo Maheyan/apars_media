@@ -1,0 +1,22 @@
+name: apars_media
+description: Student-side Flutter SDK for Apars Media live classes — HLS playback, real-time chat, and viewer tracking.
+version: 1.0.0
+homepage: https://github.com/Maheyan/apars_media
+repository: https://github.com/Maheyan/apars_media
+issue_tracker: https://github.com/Maheyan/apars_media/issues
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  socket_io_client: ^2.0.3+1
+  video_player: ^2.8.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
