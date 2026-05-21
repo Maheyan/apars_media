@@ -3,18 +3,20 @@ import 'models.dart';
 import 'room_event.dart';
 import 'socket/room_socket_manager.dart';
 
-/// An active room session returned by [AparsMediaSDK.joinRoom].
+/// An active room session returned by [AparsMediaSDK.join].
 ///
-/// Listen to [events] for real-time updates, send messages with
-/// [sendChatMessage], and always call [leave] in your widget's `dispose`.
+/// - [hlsUrl] — raw `.m3u8` URL, pass this to your video player.
+/// - [events] — real-time stream of [RoomEvent]s (chat, room ended, etc.).
+/// - [sendChatMessage] — send a chat message.
+/// - [leave] — always call this in your widget's `dispose`.
 class AparsMediaRoom {
   /// The ID of the joined room.
   final String roomId;
 
-  /// The student's user ID.
+  /// The user's application-level ID.
   final String userId;
 
-  /// The student's display name.
+  /// The user's display name.
   final String userName;
 
   /// Latest room metadata. Refreshed via [refreshInfo].
@@ -47,7 +49,11 @@ class AparsMediaRoom {
   /// Stream of real-time [RoomEvent]s. Broadcast — multiple listeners allowed.
   Stream<RoomEvent> get events => _socket.events;
 
-  /// HLS stream URL, or `null` if the room is not yet live.
+  /// HLS `.m3u8` stream URL, or `null` if the stream has not started yet.
+  ///
+  /// Pass this URL directly to your video player (e.g. `video_player`,
+  /// `better_player`, `chewie`, `media_kit`).
+  /// Poll via [refreshInfo] if this is `null` on join.
   String? get hlsUrl => info?.playbackUrls?.hls;
 
   /// Whether the room status is `"live"`.
@@ -55,16 +61,12 @@ class AparsMediaRoom {
 
   // ── Chat ──────────────────────────────────────────────────────────────────
 
-  /// Send a chat message instantly via Socket.IO (fire-and-forget).
+  /// Send a chat message via Socket.IO (fire-and-forget).
   void sendChatMessage(String content) => _socket.sendMessage(content);
-
-  /// Send a chat message via HTTP for delivery confirmation.
-  Future<ChatMessage> sendChatMessageHttp(String content) =>
-      _apiClient.sendMessage(roomId, _token, content);
 
   /// Fetch recent chat history.
   ///
-  /// [before] is an ISO 8601 timestamp — pass it to page backwards.
+  /// Pass [before] (ISO 8601 timestamp) to page backwards through history.
   Future<List<ChatMessage>> loadChatHistory({
     int limit = 50,
     String? before,
@@ -74,6 +76,8 @@ class AparsMediaRoom {
   // ── Room info ─────────────────────────────────────────────────────────────
 
   /// Re-fetch [info] from the server and return the updated value.
+  ///
+  /// Call this to get [hlsUrl] after the stream goes live.
   Future<RoomInfo> refreshInfo() async {
     info = await _apiClient.getRoomInfo(roomId, _token);
     return info!;
@@ -81,8 +85,9 @@ class AparsMediaRoom {
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-  /// Leave the room: emits `viewer:stop`, closes the socket, calls the leave
-  /// endpoint. Always call this in your widget's `dispose`.
+  /// Leave the room: closes the socket and notifies the server.
+  ///
+  /// Always call this in your widget's `dispose`.
   Future<void> leave() async {
     _socket.disconnect();
     await _apiClient.leaveRoom(roomId, _token);

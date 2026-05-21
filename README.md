@@ -21,7 +21,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  apars_media: ^1.0.2
+  apars_media: ^1.0.3
 ```
 
 Then run:

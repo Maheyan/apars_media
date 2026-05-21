@@ -9,70 +9,6 @@ class PlaybackUrls {
       PlaybackUrls(hls: j['hls'] as String?);
 }
 
-/// Feature flags configured for a room.
-class RoomFeatures {
-  /// Whether chat is enabled.
-  final bool chat;
-
-  /// Whether slow-mode is active.
-  final bool chatSlowMode;
-
-  /// Minimum seconds between messages when slow-mode is on.
-  final int chatSlowModeInterval;
-
-  /// Whether the session is being recorded.
-  final bool recording;
-
-  const RoomFeatures({
-    this.chat = true,
-    this.chatSlowMode = false,
-    this.chatSlowModeInterval = 5,
-    this.recording = false,
-  });
-  factory RoomFeatures.fromJson(Map<String, dynamic> j) => RoomFeatures(
-        chat: j['chat'] as bool? ?? true,
-        chatSlowMode: j['chatSlowMode'] as bool? ?? false,
-        chatSlowModeInterval: j['chatSlowModeInterval'] as int? ?? 5,
-        recording: j['recording'] as bool? ?? false,
-      );
-}
-
-/// Teacher disconnection grace period state.
-///
-/// When [active] is `true` the teacher has temporarily disconnected but the
-/// room is still open. [endsAt] indicates when the server will auto-close.
-class GracePeriod {
-  /// Whether a grace period is currently active.
-  final bool active;
-
-  /// Human-readable reason for the disconnection.
-  final String? reason;
-
-  /// ISO 8601 timestamp when the grace period started.
-  final String? startAt;
-
-  /// ISO 8601 timestamp when the grace period will end.
-  final String? endsAt;
-
-  /// Duration in milliseconds.
-  final int? durationMs;
-
-  const GracePeriod({
-    required this.active,
-    this.reason,
-    this.startAt,
-    this.endsAt,
-    this.durationMs,
-  });
-  factory GracePeriod.fromJson(Map<String, dynamic> j) => GracePeriod(
-        active: j['active'] as bool? ?? false,
-        reason: j['reason'] as String?,
-        startAt: j['startAt'] as String?,
-        endsAt: j['endsAt'] as String?,
-        durationMs: j['durationMs'] as int?,
-      );
-}
-
 /// A participant currently in the room.
 class Participant {
   /// Internal participant document ID.
@@ -87,9 +23,6 @@ class Participant {
   /// Role: `"host"`, `"co-teacher"`, or `"student"`.
   final String role;
 
-  /// Whether this participant has admin privileges.
-  final bool isAdmin;
-
   /// Optional profile photo URL.
   final String? photoUrl;
 
@@ -101,7 +34,6 @@ class Participant {
     required this.userId,
     required this.userName,
     required this.role,
-    this.isAdmin = false,
     this.photoUrl,
     this.joinedAt,
   });
@@ -110,7 +42,6 @@ class Participant {
         userId: j['userId'] as String,
         userName: j['userName'] as String,
         role: j['role'] as String,
-        isAdmin: j['isAdmin'] as bool? ?? false,
         photoUrl: j['photoUrl'] as String?,
         joinedAt: j['joinedAt'] as String?,
       );
@@ -139,23 +70,11 @@ class RoomInfo {
   /// Profile photo URL of the teacher.
   final String? hostPhoto;
 
-  /// AntMedia stream ID used to build HLS URLs.
-  final String? streamId;
-
-  /// Playback URLs (HLS, etc.).
+  /// Playback URLs. Use [PlaybackUrls.hls] for the `.m3u8` stream URL.
   final PlaybackUrls? playbackUrls;
-
-  /// Room feature flags.
-  final RoomFeatures? features;
-
-  /// Grace period state when the teacher has temporarily disconnected.
-  final GracePeriod? gracePeriod;
 
   /// Current participants in the room.
   final List<Participant> participants;
-
-  /// ISO 8601 timestamp when the room was created.
-  final String? createdAt;
 
   /// ISO 8601 timestamp when the stream started.
   final String? startedAt;
@@ -171,12 +90,8 @@ class RoomInfo {
     this.hostId,
     this.hostName,
     this.hostPhoto,
-    this.streamId,
     this.playbackUrls,
-    this.features,
-    this.gracePeriod,
     this.participants = const [],
-    this.createdAt,
     this.startedAt,
     this.endedAt,
   });
@@ -188,20 +103,12 @@ class RoomInfo {
         hostId: j['hostId'] as String?,
         hostName: j['hostName'] as String?,
         hostPhoto: j['hostPhoto'] as String?,
-        streamId: j['streamId'] as String?,
         playbackUrls: j['playbackUrls'] != null
             ? PlaybackUrls.fromJson(j['playbackUrls'] as Map<String, dynamic>)
-            : null,
-        features: j['features'] != null
-            ? RoomFeatures.fromJson(j['features'] as Map<String, dynamic>)
-            : null,
-        gracePeriod: j['gracePeriod'] != null
-            ? GracePeriod.fromJson(j['gracePeriod'] as Map<String, dynamic>)
             : null,
         participants: (j['participants'] as List<dynamic>? ?? [])
             .map((e) => Participant.fromJson(e as Map<String, dynamic>))
             .toList(),
-        createdAt: j['createdAt'] as String?,
         startedAt: j['startedAt'] as String?,
         endedAt: j['endedAt'] as String?,
       );
@@ -230,12 +137,6 @@ class ChatMessage {
   /// Whether this message is currently pinned.
   final bool pinned;
 
-  /// User ID of whoever pinned this message.
-  final String? pinnedBy;
-
-  /// ISO 8601 timestamp when the message was pinned.
-  final String? pinnedAt;
-
   const ChatMessage({
     required this.id,
     required this.senderId,
@@ -244,8 +145,6 @@ class ChatMessage {
     required this.content,
     required this.timestamp,
     this.pinned = false,
-    this.pinnedBy,
-    this.pinnedAt,
   });
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
         id: j['id'] as String,
@@ -255,29 +154,10 @@ class ChatMessage {
         content: j['content'] as String,
         timestamp: j['timestamp'] as String,
         pinned: j['pinned'] as bool? ?? false,
-        pinnedBy: j['pinnedBy'] as String?,
-        pinnedAt: j['pinnedAt'] as String?,
       );
 }
 
 // Internal response wrappers — not part of the public API.
-
-class EmbedTokenResponse {
-  final String token;
-  final String roomId;
-  final String userId;
-  const EmbedTokenResponse({
-    required this.token,
-    required this.roomId,
-    required this.userId,
-  });
-  factory EmbedTokenResponse.fromJson(Map<String, dynamic> j) =>
-      EmbedTokenResponse(
-        token: j['token'] as String,
-        roomId: j['room_id'] as String,
-        userId: j['user_id'] as String,
-      );
-}
 
 class JoinRoomResponse {
   final RoomInfo? room;

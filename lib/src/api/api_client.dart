@@ -4,22 +4,9 @@ import '../models.dart';
 
 class ApiClient {
   final String baseUrl;
-  final String clientId;
-  final String authKey;
   final http.Client _http;
 
-  ApiClient({
-    required this.baseUrl,
-    required this.clientId,
-    required this.authKey,
-  }) : _http = http.Client();
-
-  Map<String, String> get _apiHeaders => {
-        'x-client-id': clientId,
-        'x-auth-key': authKey,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      };
+  ApiClient({required this.baseUrl}) : _http = http.Client();
 
   Map<String, String> _bearerHeaders(String token) => {
         'Authorization': 'Bearer $token',
@@ -30,26 +17,6 @@ class ApiClient {
   Uri _uri(String path, [Map<String, String>? params]) {
     final uri = Uri.parse('$baseUrl$path');
     return params != null ? uri.replace(queryParameters: params) : uri;
-  }
-
-  Future<EmbedTokenResponse> generateEmbedToken({
-    required String roomId,
-    required String userId,
-    required String userName,
-  }) async {
-    final res = await _http.post(
-      _uri('/api/embed/token'),
-      headers: _apiHeaders,
-      body: jsonEncode({
-        'roomId': roomId,
-        'userId': userId,
-        'userName': userName,
-        'role': 'student',
-        'expiresIn': 86400,
-      }),
-    );
-    _assertSuccess(res, 'Token generation');
-    return EmbedTokenResponse.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
   }
 
   Future<RoomInfo> getRoomInfo(String roomId, String token) async {
@@ -81,21 +48,6 @@ class ApiClient {
       headers: _bearerHeaders(token),
       body: '{}',
     );
-  }
-
-  Future<ChatMessage> sendMessage(
-    String roomId,
-    String token,
-    String content,
-  ) async {
-    final res = await _http.post(
-      _uri('/api/embed/public/room/$roomId/messages'),
-      headers: _bearerHeaders(token),
-      body: jsonEncode({'content': content}),
-    );
-    _assertSuccess(res, 'Send message');
-    final body = jsonDecode(res.body) as Map<String, dynamic>;
-    return ChatMessage.fromJson(body['data'] as Map<String, dynamic>);
   }
 
   Future<List<ChatMessage>> getMessages(

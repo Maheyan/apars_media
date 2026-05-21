@@ -82,15 +82,6 @@ class RoomSocketManager {
           _emit(UserBanned(m['userId'] as String, m['userName'] as String));
         });
       })
-      ..on('viewer:count', (data) {
-        _safe(() => _emit(ViewerCountUpdated(_toMap(data)['count'] as int? ?? 0)));
-      })
-      ..on('teacher:video', (data) {
-        _safe(() => _emit(TeacherVideoToggled(_toMap(data)['enabled'] as bool? ?? true)));
-      })
-      ..on('teacher:audio', (data) {
-        _safe(() => _emit(TeacherAudioToggled(_toMap(data)['enabled'] as bool? ?? true)));
-      })
       ..on('teacher:reconnected', (_) => _emit(const TeacherReconnected()))
       ..on('room:ended', (_) {
         _stopHeartbeat();

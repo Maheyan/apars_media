@@ -97,30 +97,6 @@ final class UserBanned extends RoomEvent {
   const UserBanned(this.userId, this.userName);
 }
 
-/// The live viewer count was updated.
-final class ViewerCountUpdated extends RoomEvent {
-  /// Current number of viewers.
-  final int count;
-
-  const ViewerCountUpdated(this.count);
-}
-
-/// The teacher toggled their camera on or off.
-final class TeacherVideoToggled extends RoomEvent {
-  /// `true` if the camera is now on.
-  final bool enabled;
-
-  const TeacherVideoToggled(this.enabled);
-}
-
-/// The teacher toggled their microphone on or off.
-final class TeacherAudioToggled extends RoomEvent {
-  /// `true` if the microphone is now on.
-  final bool enabled;
-
-  const TeacherAudioToggled(this.enabled);
-}
-
 /// The teacher reconnected after a temporary disconnection.
 final class TeacherReconnected extends RoomEvent {
   const TeacherReconnected();

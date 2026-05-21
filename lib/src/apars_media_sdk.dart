@@ -1,106 +1,68 @@
 import 'api/api_client.dart';
-import 'models.dart';
 import 'apars_media_room.dart';
 
-/// Entry point for the AparsMedia student SDK.
+/// Entry point for the AparsMedia SDK.
 ///
-/// **Single-client apps** — use the static helpers:
-/// ```dart
-/// AparsMediaSDK.init(baseUrl: '...', clientId: '...', authKey: '...');
-/// final room = await AparsMediaSDK.instance.joinRoom(...);
-/// ```
+/// Your backend issues a short-lived embed token — pass it directly here.
+/// **Never embed server credentials (`clientId` / `authKey`) in the mobile app.**
 ///
-/// **Multi-client apps** — construct independent instances, one per server:
 /// ```dart
-/// final schoolA = AparsMediaSDK(baseUrl: '...', clientId: idA, authKey: keyA);
-/// final schoolB = AparsMediaSDK(baseUrl: '...', clientId: idB, authKey: keyB);
+/// // 1. Fetch a token from YOUR backend
+/// final token = await myApi.getClassToken(roomId: id, userId: uid);
+///
+/// // 2. Join the room
+/// final room = await AparsMediaSDK.join(
+///   serverUrl: 'https://your-server.com',
+///   roomId:    id,
+///   userId:    uid,
+///   userName:  name,
+///   token:     token,
+/// );
+///
+/// // 3. Use the raw .m3u8 URL with any video player
+/// final hlsUrl = room.hlsUrl; // null if stream hasn't started yet
+///
+/// // 4. Listen for real-time events (chat, room ended, etc.)
+/// room.events.listen((event) { ... });
+///
+/// // 5. Clean up when done
+/// await room.leave();
 /// ```
 class AparsMediaSDK {
-  /// The base URL of this server instance, with any trailing slash stripped.
-  final String baseUrl;
+  // Static-only class — no instances needed.
+  AparsMediaSDK._();
 
-  final ApiClient _apiClient;
-
-  AparsMediaSDK({
-    required String baseUrl,
-    required String clientId,
-    required String authKey,
-  })  : baseUrl = baseUrl.replaceAll(RegExp(r'/+$'), ''),
-        _apiClient = ApiClient(
-          baseUrl: baseUrl.replaceAll(RegExp(r'/+$'), ''),
-          clientId: clientId,
-          authKey: authKey,
-        );
-
-  // ── Singleton helpers (single-client convenience) ─────────────────────────
-
-  static AparsMediaSDK? _instance;
-
-  /// Initialize the default instance. Safe to call multiple times — subsequent
-  /// calls replace the previous instance.
-  static AparsMediaSDK init({
-    required String baseUrl,
-    required String clientId,
-    required String authKey,
-  }) {
-    _instance = AparsMediaSDK(
-      baseUrl: baseUrl,
-      clientId: clientId,
-      authKey: authKey,
-    );
-    return _instance!;
-  }
-
-  /// The default instance created by [init].
-  /// Throws [StateError] if [init] has not been called.
-  static AparsMediaSDK get instance {
-    if (_instance == null) {
-      throw StateError(
-        'AparsMediaSDK not initialized. Call AparsMediaSDK.init() first.',
-      );
-    }
-    return _instance!;
-  }
-
-  // ── Core API ──────────────────────────────────────────────────────────────
-
-  /// Join a live class room as a student.
+  /// Join a live class room using a pre-issued embed token.
   ///
-  /// Internally this:
-  /// 1. Generates a short-lived embed JWT via `POST /api/embed/token`
-  /// 2. Registers the student via `POST /api/embed/public/room/:id/join`
-  /// 3. Opens a Socket.IO connection and emits `chat:join` + `viewer:start`
+  /// The [token] must be fetched from your own backend server, which holds
+  /// the `clientId` and `authKey` credentials securely.
   ///
-  /// Throws [AparsMediaException] if any network call fails.
-  Future<AparsMediaRoom> joinRoom({
+  /// Throws [AparsMediaException] if the network request fails.
+  static Future<AparsMediaRoom> join({
+    required String serverUrl,
     required String roomId,
     required String userId,
     required String userName,
+    required String token,
     String? photoUrl,
   }) async {
-    final tokenRes = await _apiClient.generateEmbedToken(
-      roomId: roomId,
-      userId: userId,
-      userName: userName,
-    );
+    final url = serverUrl.replaceAll(RegExp(r'/+$'), '');
+    final apiClient = ApiClient(baseUrl: url);
 
-    final joinRes = await _apiClient.joinRoom(
+    final joinRes = await apiClient.joinRoom(
       roomId,
-      tokenRes.token,
+      token,
       photoUrl: photoUrl,
     );
 
     return AparsMediaRoom.create(
-      apiClient: _apiClient,
-      serverUrl: baseUrl,
+      apiClient: apiClient,
+      serverUrl: url,
       roomId: roomId,
       userId: userId,
       userName: userName,
-      token: tokenRes.token,
+      token: token,
       info: joinRes.room,
     );
   }
-
-  /// Release HTTP resources. Call when the SDK instance is no longer needed.
-  void dispose() => _apiClient.dispose();
 }
