@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/apars_media.svg)](https://pub.dev/packages/apars_media)
 [![pub points](https://img.shields.io/pub/points/apars_media)](https://pub.dev/packages/apars_media/score)
-[![license](https://img.shields.io/github/license/Maheyan/Teachstack)](LICENSE)
+[![license](https://img.shields.io/github/license/Maheyan/apars_media)](LICENSE)
 
 Student-side Flutter SDK for [Apars Media](https://pub.dev/packages/apars_media) live classes.
 Supports HLS playback, real-time chat, and viewer tracking out of the box.
@@ -21,7 +21,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  apars_media: ^1.0.0
+  apars_media: ^1.0.2
 ```
 
 Then run:

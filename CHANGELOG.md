@@ -1,3 +1,6 @@
+## 1.0.2
+* License Updated
+
 ## 1.0.1
 * Bugs Fix
 
