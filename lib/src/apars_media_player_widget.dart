@@ -40,6 +40,7 @@ class AparsMediaPlayerWidget extends StatefulWidget {
     this.builder,
     this.onReady,
     this.onError,
+  // ignore: prefer_initializing_formals — field is AparsMediaRoom? but param is non-null
   })  : room = room,
         hlsUrl = null;
 
@@ -49,6 +50,7 @@ class AparsMediaPlayerWidget extends StatefulWidget {
     this.builder,
     this.onReady,
     this.onError,
+  // ignore: prefer_initializing_formals — field is String? but param is non-null
   })  : hlsUrl = hlsUrl,
         room = null;
 

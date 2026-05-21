@@ -1,6 +1,10 @@
 # apars_media
 
-Student-side Flutter SDK for [Apars Media](https://github.com/Maheyan/apars_media) live classes.
+[![pub package](https://img.shields.io/pub/v/apars_media.svg)](https://pub.dev/packages/apars_media)
+[![pub points](https://img.shields.io/pub/points/apars_media)](https://pub.dev/packages/apars_media/score)
+[![license](https://img.shields.io/github/license/Maheyan/Teachstack)](LICENSE)
+
+Student-side Flutter SDK for [Apars Media](https://pub.dev/packages/apars_media) live classes.
 Supports HLS playback, real-time chat, and viewer tracking out of the box.
 
 ## Features

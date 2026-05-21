@@ -1,17 +1,28 @@
-// Data models mirroring the AparsMedia server API
+// Data models mirroring the Apars Media server API.
 
+/// HLS and other playback URLs for a live room.
 class PlaybackUrls {
+  /// HLS `.m3u8` playlist URL, or `null` if the stream has not started.
   final String? hls;
   const PlaybackUrls({this.hls});
   factory PlaybackUrls.fromJson(Map<String, dynamic> j) =>
       PlaybackUrls(hls: j['hls'] as String?);
 }
 
+/// Feature flags configured for a room.
 class RoomFeatures {
+  /// Whether chat is enabled.
   final bool chat;
+
+  /// Whether slow-mode is active.
   final bool chatSlowMode;
+
+  /// Minimum seconds between messages when slow-mode is on.
   final int chatSlowModeInterval;
+
+  /// Whether the session is being recorded.
   final bool recording;
+
   const RoomFeatures({
     this.chat = true,
     this.chatSlowMode = false,
@@ -26,12 +37,26 @@ class RoomFeatures {
       );
 }
 
+/// Teacher disconnection grace period state.
+///
+/// When [active] is `true` the teacher has temporarily disconnected but the
+/// room is still open. [endsAt] indicates when the server will auto-close.
 class GracePeriod {
+  /// Whether a grace period is currently active.
   final bool active;
+
+  /// Human-readable reason for the disconnection.
   final String? reason;
+
+  /// ISO 8601 timestamp when the grace period started.
   final String? startAt;
+
+  /// ISO 8601 timestamp when the grace period will end.
   final String? endsAt;
+
+  /// Duration in milliseconds.
   final int? durationMs;
+
   const GracePeriod({
     required this.active,
     this.reason,
@@ -48,14 +73,29 @@ class GracePeriod {
       );
 }
 
+/// A participant currently in the room.
 class Participant {
+  /// Internal participant document ID.
   final String id;
+
+  /// The user's application-level ID.
   final String userId;
+
+  /// The user's display name.
   final String userName;
+
+  /// Role: `"host"`, `"co-teacher"`, or `"student"`.
   final String role;
+
+  /// Whether this participant has admin privileges.
   final bool isAdmin;
+
+  /// Optional profile photo URL.
   final String? photoUrl;
+
+  /// ISO 8601 timestamp when this user joined.
   final String? joinedAt;
+
   const Participant({
     required this.id,
     required this.userId,
@@ -76,22 +116,53 @@ class Participant {
       );
 }
 
+/// Metadata for a live class room.
 class RoomInfo {
+  /// Server-assigned room ID.
   final String id;
+
+  /// Short alphanumeric code for the room.
   final String? code;
+
+  /// Human-readable room name.
   final String? name;
+
+  /// Current status: `"waiting"`, `"live"`, or `"ended"`.
   final String status;
+
+  /// User ID of the teacher / host.
   final String? hostId;
+
+  /// Display name of the teacher.
   final String? hostName;
+
+  /// Profile photo URL of the teacher.
   final String? hostPhoto;
+
+  /// AntMedia stream ID used to build HLS URLs.
   final String? streamId;
+
+  /// Playback URLs (HLS, etc.).
   final PlaybackUrls? playbackUrls;
+
+  /// Room feature flags.
   final RoomFeatures? features;
+
+  /// Grace period state when the teacher has temporarily disconnected.
   final GracePeriod? gracePeriod;
+
+  /// Current participants in the room.
   final List<Participant> participants;
+
+  /// ISO 8601 timestamp when the room was created.
   final String? createdAt;
+
+  /// ISO 8601 timestamp when the stream started.
   final String? startedAt;
+
+  /// ISO 8601 timestamp when the room ended.
   final String? endedAt;
+
   const RoomInfo({
     required this.id,
     this.code,
@@ -136,16 +207,35 @@ class RoomInfo {
       );
 }
 
+/// A chat message received in or sent to a room.
 class ChatMessage {
+  /// Unique message ID.
   final String id;
+
+  /// Sender's user ID.
   final String senderId;
+
+  /// Sender's display name.
   final String senderName;
+
+  /// Sender's profile photo URL, if available.
   final String? senderPhotoUrl;
+
+  /// Text content of the message.
   final String content;
+
+  /// ISO 8601 timestamp when the message was sent.
   final String timestamp;
+
+  /// Whether this message is currently pinned.
   final bool pinned;
+
+  /// User ID of whoever pinned this message.
   final String? pinnedBy;
+
+  /// ISO 8601 timestamp when the message was pinned.
   final String? pinnedAt;
+
   const ChatMessage({
     required this.id,
     required this.senderId,
@@ -170,7 +260,8 @@ class ChatMessage {
       );
 }
 
-// Internal response wrappers
+// Internal response wrappers — not part of the public API.
+
 class EmbedTokenResponse {
   final String token;
   final String roomId;
@@ -202,9 +293,14 @@ class JoinRoomResponse {
       );
 }
 
+/// Thrown by [AparsMediaSDK] methods when a network or server error occurs.
 class AparsMediaException implements Exception {
+  /// Human-readable error description.
   final String message;
+
+  /// Creates an [AparsMediaException] with the given [message].
   const AparsMediaException(this.message);
+
   @override
   String toString() => 'AparsMediaException: $message';
 }

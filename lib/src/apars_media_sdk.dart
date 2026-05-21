@@ -25,9 +25,9 @@ class AparsMediaSDK {
     required String baseUrl,
     required String clientId,
     required String authKey,
-  })  : baseUrl = baseUrl.trimRight('/'),
+  })  : baseUrl = baseUrl.replaceAll(RegExp(r'/+$'), ''),
         _apiClient = ApiClient(
-          baseUrl: baseUrl.trimRight('/'),
+          baseUrl: baseUrl.replaceAll(RegExp(r'/+$'), ''),
           clientId: clientId,
           authKey: authKey,
         );
@@ -90,8 +90,9 @@ class AparsMediaSDK {
       photoUrl: photoUrl,
     );
 
-    return AparsMediaRoom._(
-      sdk: this,
+    return AparsMediaRoom.create(
+      apiClient: _apiClient,
+      serverUrl: baseUrl,
       roomId: roomId,
       userId: userId,
       userName: userName,

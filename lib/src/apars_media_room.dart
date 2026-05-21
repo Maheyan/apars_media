@@ -2,34 +2,40 @@ import 'api/api_client.dart';
 import 'models.dart';
 import 'room_event.dart';
 import 'socket/room_socket_manager.dart';
-import 'apars_media_sdk.dart';
 
 /// An active room session returned by [AparsMediaSDK.joinRoom].
 ///
-/// Listen to [events] for real-time updates. Call [leave] when done.
+/// Listen to [events] for real-time updates, send messages with
+/// [sendChatMessage], and always call [leave] in your widget's `dispose`.
 class AparsMediaRoom {
+  /// The ID of the joined room.
   final String roomId;
+
+  /// The student's user ID.
   final String userId;
+
+  /// The student's display name.
   final String userName;
 
   /// Latest room metadata. Refreshed via [refreshInfo].
   RoomInfo? info;
 
-  final AparsMediaSDK _sdk;
+  final ApiClient _apiClient;
   final String _token;
   final RoomSocketManager _socket;
 
-  AparsMediaRoom._({
-    required AparsMediaSDK sdk,
+  AparsMediaRoom.create({
+    required ApiClient apiClient,
+    required String serverUrl,
     required this.roomId,
     required this.userId,
     required this.userName,
     required String token,
     required this.info,
-  })  : _sdk = sdk,
+  })  : _apiClient = apiClient,
         _token = token,
         _socket = RoomSocketManager(
-          serverUrl: sdk.baseUrl,
+          serverUrl: serverUrl,
           token: token,
           roomId: roomId,
           userId: userId,
@@ -54,7 +60,7 @@ class AparsMediaRoom {
 
   /// Send a chat message via HTTP for delivery confirmation.
   Future<ChatMessage> sendChatMessageHttp(String content) =>
-      _sdk._apiClient.sendMessage(roomId, _token, content);
+      _apiClient.sendMessage(roomId, _token, content);
 
   /// Fetch recent chat history.
   ///
@@ -63,13 +69,13 @@ class AparsMediaRoom {
     int limit = 50,
     String? before,
   }) =>
-      _sdk._apiClient.getMessages(roomId, _token, limit: limit, before: before);
+      _apiClient.getMessages(roomId, _token, limit: limit, before: before);
 
   // ── Room info ─────────────────────────────────────────────────────────────
 
   /// Re-fetch [info] from the server and return the updated value.
   Future<RoomInfo> refreshInfo() async {
-    info = await _sdk._apiClient.getRoomInfo(roomId, _token);
+    info = await _apiClient.getRoomInfo(roomId, _token);
     return info!;
   }
 
@@ -79,6 +85,6 @@ class AparsMediaRoom {
   /// endpoint. Always call this in your widget's `dispose`.
   Future<void> leave() async {
     _socket.disconnect();
-    await _sdk._apiClient.leaveRoom(roomId, _token);
+    await _apiClient.leaveRoom(roomId, _token);
   }
 }
